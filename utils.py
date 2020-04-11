@@ -17,21 +17,20 @@ Transition = namedtuple('Transition',
 # 'rectified' relu - ensuring mean(RReLU(x)) = 0
 # assuming mean(x) = 0. Not the case with ReLU(x)
 class RReLU(nn.Module):
-    def __init__(self):
+    def __init__(self, residual = False):
         super().__init__()
         self.rectifier = - 1 / np.sqrt(2 * np.pi)
         self.act = nn.ReLU()
         
     def forward(self, x):
         return self.act(x) + self.rectifier
-
-# 'rectified' LeakyReLU so that mean(RLReLU(x)) = 0
-# assuming mean(x) = 0.    
+    
 class RLReLU(nn.Module):
-    def __init__(self, slope = 0.03):
+    def __init__(self, slope = 0.01):
         super().__init__()
-        self.rectifier = - 1 / np.sqrt(2 * np.pi) + slope / (2 * np.sqrt(np.pi))
-        self.act = nn.LeakyReLU(negative_slope = slope)
+        self.slope = slope
+        self.rectifier = - (1 - slope) / np.sqrt(2 * np.pi)
+        self.act = nn.LeakyReLU(negative_slope = slope, inplace = True)
         
     def forward(self, x):
         return self.act(x) + self.rectifier
